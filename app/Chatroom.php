@@ -38,4 +38,17 @@ class Chatroom extends Model
     	$total = Chatroom::count();
     	return $total;
     }
+
+	/**
+     * Return chatroom with given id.
+     *
+     * @var array
+     */
+    public function getChatRoomByRoomId($id)
+    {
+    	$data = Chatroom::select('room_id', 'name', 'imgpath')
+    		->where('room_id', $id)
+    		->first();
+    	return $data;
+    }
 }

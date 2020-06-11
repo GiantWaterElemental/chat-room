@@ -26,7 +26,7 @@
                         <tr>
                             <td class="">
                                 当前有{{ $list[$i]->count }}人正在聊天
-                                <a class="btn btn-success float-right" href="{{ route('chatroom') }}">加入</a>
+                                <a class="btn btn-success float-right" href="{{ route('chatroom', ['id' => $list[$i]->room_id]) }}">加入</a>
                             </td>
                         </tr>
                     </tbody>
