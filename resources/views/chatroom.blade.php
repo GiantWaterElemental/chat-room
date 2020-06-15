@@ -88,7 +88,7 @@
         timeout: 50000,
         timeoutObj: null,
         reset: function(){
-            clearTimeout(this.timeoutObj);
+            this.timeoutObj = null;
             this.start();
         },
         start: function(){
@@ -117,6 +117,7 @@
                 "username":username
             };
             websocket.send(JSON.stringify(data));
+            heartBeat.reset();
         }
     });
 </script>
