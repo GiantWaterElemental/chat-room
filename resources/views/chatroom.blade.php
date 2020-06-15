@@ -15,7 +15,7 @@
                 <tbody>
                     <tr>
                         <td class="bg-light">
-                            <div data-spy="scroll" data-target="#navbar-example" data-offset="0" style="height:400px; overflow: auto; position: relative;"></div>
+                            <div id="message-content" data-spy="scroll" data-target="#navbar-example" data-offset="0" style="height:400px; overflow: auto; position: relative;"></div>
                         </td>
                     </tr>
                 </tbody>
@@ -47,10 +47,14 @@
             </div>
         </div>
     </div>
+    @include('message')
 </div>
+
 
 <script src="{{ asset('js/jquery-3.5.1.min.js') }}"></script>
 <script type="text/javascript">
+    var userId = "{{ $userId }}";
+    var username = "{{ $username }}";
     var wsServer = 'ws://127.0.0.1:9501';
     var websocket = new WebSocket(wsServer);
     websocket.onopen = function (evt) {
@@ -63,16 +67,31 @@
 
     websocket.onmessage = function (evt) {
         console.log('Retrieved data from server: ' + evt.data);
+        var message = eval('(' + evt.data + ')');
+        var className = "#message-proto .message";
+        if (userId == message['userId']) {
+            className = "#message-proto .self-message";
+        }
+        var messageBox = $(className).clone();
+        $(messageBox).find(".user-div").text(message['username']);
+        $(messageBox).find(".message-div").text(message['message']);
+        $("#message-content").append($(messageBox));
     };
 
     websocket.onerror = function (evt, e) {
         console.log('Error occured: ' + evt.data);
     };
 
+    $( window ).on("unload", function() {
+        websocket.close();
+    });
+
     $("#submit").click(function () {
         var message = $("#message").val();
         if (message) {
-            websocket.send(message);
+            $("#message").val("");
+            var data = '{"message":"' + message + '", "userId":"' + userId + '", "username":"' + username + '"}';
+            websocket.send(data);
         }
     });
 </script>

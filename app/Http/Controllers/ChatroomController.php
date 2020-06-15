@@ -28,10 +28,13 @@ class ChatroomController extends Controller
      */
     public function list()
     {
-        $chatroom = new Chatroom();
-        $list = $chatroom->list();
-        $total = $chatroom->total();
+        $list = $this->chatroom->list();
+        $total = $this->chatroom->total();
         $count = count($list);
+        foreach ($list as &$room) {
+            $key = 'chatroom_' . $room['room_id'];
+            $room['count'] = Redis::scard($key);
+        }
         return view('chatroomList', ['list' => $list, 'total' => $total, 'count' => $count]);
     }
 
@@ -50,6 +53,6 @@ class ChatroomController extends Controller
         $userList = Redis::smembers($key);
 
         $room = $this->chatroom->getChatRoomByRoomId($roomId);
-        return view('chatroom', ['userList' => $userList, 'room' => $room]);
+        return view('chatroom', ['userList' => $userList, 'room' => $room, 'userId' => $userId, 'username' => Auth::user()->name]);
     }
 }
