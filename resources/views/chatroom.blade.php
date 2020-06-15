@@ -55,7 +55,7 @@
 <script type="text/javascript">
     var userId = "{{ $userId }}";
     var username = "{{ $username }}";
-    var wsServer = 'ws://127.0.0.1:9501';
+    var wsServer = 'ws://139.224.15.38/ws';
     var websocket = new WebSocket(wsServer);
     websocket.onopen = function (evt) {
         console.log("Connected to WebSocket server.");
