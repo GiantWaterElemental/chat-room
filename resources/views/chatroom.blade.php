@@ -59,6 +59,7 @@
     var websocket = new WebSocket(wsServer);
     websocket.onopen = function (evt) {
         console.log("Connected to WebSocket server.");
+        heartBeat.start();
     };
 
     websocket.onclose = function (evt) {
@@ -76,10 +77,30 @@
         $(messageBox).find(".user-div").text(message['username']);
         $(messageBox).find(".message-div").text(message['message']);
         $("#message-content").append($(messageBox));
+        heartBeat.reset();
     };
 
     websocket.onerror = function (evt, e) {
         console.log('Error occured: ' + evt.data);
+    };
+
+    var heartBeat = {
+        timeout: 50000,
+        timeoutObj: null,
+        reset: function(){
+            clearTimeout(this.timeoutObj);
+            this.start();
+        },
+        start: function(){
+            this.timeoutObj = setTimeout(function(){
+                var message = {
+                    "type": "1",
+                    "message":"heart beat at "+ new Date()
+                };
+                console.log("heart beat");
+                websocket.send(JSON.stringify(message));
+            },this.timeout)
+        }
     };
 
     $( window ).on("unload", function() {
@@ -90,8 +111,12 @@
         var message = $("#message").val();
         if (message) {
             $("#message").val("");
-            var data = '{"message":"' + message + '", "userId":"' + userId + '", "username":"' + username + '"}';
-            websocket.send(data);
+            var data = {
+                "message":message,
+                "userId":userId,
+                "username":username
+            };
+            websocket.send(JSON.stringify(data));
         }
     });
 </script>
