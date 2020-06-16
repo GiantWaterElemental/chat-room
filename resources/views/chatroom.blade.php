@@ -95,7 +95,7 @@
         websocket.send(JSON.stringify(heartBeatMessage));
     }
 
-    var timer = setInterval(heartBeat, 5000);
+    var timer = setInterval(heartBeat, 50000);
 
     $( window ).on("unload", function() {
         websocket.close();
@@ -106,13 +106,14 @@
         if (message) {
             $("#message").val("");
             var data = {
+                "type":0
                 "message":message,
                 "userId":userId,
                 "username":username
             };
             websocket.send(JSON.stringify(data));
             clearInterval(timer);
-            // timer = setInterval(heartBeat, 50000);
+            timer = setInterval(heartBeat, 50000);
         }
     });
 </script>
