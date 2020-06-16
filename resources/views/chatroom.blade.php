@@ -106,7 +106,7 @@
         if (message) {
             $("#message").val("");
             var data = {
-                "type":0
+                "type":0,
                 "message":message,
                 "userId":userId,
                 "username":username
