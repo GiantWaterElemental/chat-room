@@ -59,7 +59,6 @@
     var websocket = new WebSocket(wsServer);
     websocket.onopen = function (evt) {
         console.log("Connected to WebSocket server.");
-        heartBeat.start();
     };
 
     websocket.onclose = function (evt) {
@@ -74,34 +73,29 @@
             className = "#message-proto .self-message";
         }
         var messageBox = $(className).clone();
-        $(messageBox).find(".user-div").text(message['username']);
+        var messagename = message['username'] ? message['username'] : "测试";
+        $(messageBox).find(".user-div").text(messagename);
         $(messageBox).find(".message-div").text(message['message']);
         $("#message-content").append($(messageBox));
-        heartBeat.reset();
     };
 
     websocket.onerror = function (evt, e) {
         console.log('Error occured: ' + evt.data);
     };
 
-    var heartBeat = {
-        timeout: 50000,
-        timeoutObj: null,
-        reset: function(){
-            this.timeoutObj = null;
-            this.start();
-        },
-        start: function(){
-            this.timeoutObj = setTimeout(function(){
-                var message = {
-                    "type": "1",
-                    "message":"heart beat at "+ new Date()
-                };
-                console.log("heart beat");
-                websocket.send(JSON.stringify(message));
-            },this.timeout)
-        }
-    };
+    var heartBeatMessage = {
+        "type": "1",
+        "message": "heart beat at " + new Date(),
+        "userId": 0,
+        "username": "测试"
+    }
+
+    var heartBeat = function(){
+        console.log("heartBeat");
+        websocket.send(JSON.stringify(heartBeatMessage));
+    }
+
+    var timer = setInterval(heartBeat, 5000);
 
     $( window ).on("unload", function() {
         websocket.close();
@@ -117,7 +111,8 @@
                 "username":username
             };
             websocket.send(JSON.stringify(data));
-            heartBeat.reset();
+            clearInterval(timer);
+            // timer = setInterval(heartBeat, 50000);
         }
     });
 </script>
