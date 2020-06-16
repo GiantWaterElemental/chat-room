@@ -19,7 +19,7 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/home', 'ChatroomController@list')->name('home');
 
 Route::get('/chatroomList', 'ChatroomController@list')->name('chatroomList');
 
