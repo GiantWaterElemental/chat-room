@@ -1,4 +1,3 @@
-
 @section('message')
 <div id="message-proto" class="row" style="display: none;">
     <div class="message" style="height: 65px;">
