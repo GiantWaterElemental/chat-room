@@ -39,12 +39,12 @@ class WebSocketService implements WebSocketHandlerInterface
 
     // 声明没有参数的构造函数
 
-    public function __construct(Message $message)
+    public function __construct()
 
     {
 
         $this->middleware('auth');
-        $this->message = $message;
+        $this->message = new Message();
 
     }
 
@@ -67,18 +67,18 @@ class WebSocketService implements WebSocketHandlerInterface
         $username = Auth::user()->name;
 
         //get current fd from this room
-        $channelKey = CHANNELKEY . $roomId;
+        $channelKey = self::CHANNELKEY . $roomId;
         $channelFd = Redis::smembers($channelKey);
 
         //add this fd to this room
-        $fdUserKey = FDUSERKEY . $request->fd;
+        $fdUserKey = self::FDUSERKEY . $request->fd;
         $result = Redis::sadd($channelKey, $request->fd);
 
         //set fd user relationship
         $result = Redis::set($fdUserKey, json_encode(['userId' => Auth::user()->id, 'username' => $username, 'roomId' => $roomId]));
         
         $data = [
-            "type" => MESSAGETYPE[2],
+            "type" => self::MESSAGETYPE[2],
             "message" => $username . "加入了聊天室",
             "userId" => $userId,
             "username" => $username
@@ -97,7 +97,7 @@ class WebSocketService implements WebSocketHandlerInterface
         $data = json_decode($frame->data, true);
 
         switch ($data['type']) {
-            case MESSAGETYPE[0]:
+            case self::MESSAGETYPE[0]:
                 // \Log::info('Received message', [$frame->fd, $frame->data, $frame->opcode, $frame->finish]);
                 foreach ($server->connections as $fd) {
                     $server->push($fd, $frame->data);
@@ -108,12 +108,12 @@ class WebSocketService implements WebSocketHandlerInterface
                 $messageId = $this->message->add($data['roomId'], $data['userId'], $data['message']);
                 break;
 
-            case MESSAGETYPE[3]:
+            case self::MESSAGETYPE[3]:
                 // delete user from chat room redis set
                 $key = ROOMKEY . $data['roomId'];
                 $result = Redis::srem($key, $data['username']);
 
-            case MESSAGETYPE[2]:
+            case self::MESSAGETYPE[2]:
                 foreach ($server->connections as $fd) {
                     $server->push($fd, $frame->data);
                 }
@@ -134,21 +134,21 @@ class WebSocketService implements WebSocketHandlerInterface
         // throw new \Exception('an exception');// 此时抛出的异常上层会忽略，并记录到Swoole日志，需要开发者try/catch捕获处理
 
         // get user by fd from redis
-        $fdUserKey = FDUSERKEY . $fd;
+        $fdUserKey = self::FDUSERKEY . $fd;
         $user = Redis::get($key);
         $user = json_decode($user, true);
 
         //get current fd from this room
         $roomId = $user['roomId'];
-        $channelKey = CHANNELKEY . $roomId;
+        $channelKey = self::CHANNELKEY . $roomId;
         $channelFd = Redis::smembers($channelKey);
 
         // delete user from chat room redis set
-        $key = ROOMKEY . $data['roomId'];
+        $key = self::ROOMKEY . $data['roomId'];
         $result = Redis::srem($key, $data['username']);
 
         $data = [
-            "type" => MESSAGETYPE[3],
+            "type" => self::MESSAGETYPE[3],
             "message" => $user['username'] . "离开了聊天室",
             "userId" => $user['userId'],
             "username" => $user['username']
@@ -157,7 +157,6 @@ class WebSocketService implements WebSocketHandlerInterface
         foreach ($channelFd as $fd) {
             $server->push($fd, json_encode($data));
         }
-        break;
 
     }
 
