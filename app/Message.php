@@ -11,42 +11,50 @@ class Message extends Model
      *
      * @var string
      */
-    protected $table = 'chatroom';
+    protected $table = 'message';
 
 	/**
-     * Return list of chatroom with page size.
+     * Insert message into database
      *
-     * @var array
+     * @var $roomId int
+     * @var $userId int
+     * @var $message str
      */
-    public function list()
+    public function add($roomId, $userId, $message)
     {
-    	$list = Chatroom::select('room_id', 'name', 'imgpath')
-    		->limit($this->pageSize)
-    		->get();
-    	return $list;
+    	$messageId = Message::insertGetId([
+            'room_id' => $roomId,
+            'user_id' => $userId,
+            'message' => $message
+        ]);
+    	return $messageId;
     }
 
-	/**
-     * Return total number of chatroom.
+    /**
+     * Get message list
      *
-     * @var int
+     * @var $roomId int
+     * @var $messageId int
+     * @var $index int
+     * @var $pageSize int
+     * @var $order int
      */
-    public function total()
+    public function list($roomId, $messageId, $index, $pageSize, $order)
     {
-    	$total = Chatroom::count();
-    	return $total;
-    }
-
-	/**
-     * Return chatroom with given id.
-     *
-     * @var array
-     */
-    public function getChatRoomByRoomId($id)
-    {
-    	$data = Chatroom::select('room_id', 'name', 'imgpath')
-    		->where('room_id', $id)
-    		->first();
-    	return $data;
+        $orderBy = $order ? 'ASC' : 'DESC';
+        $pageSize = $pageSize ? $pageSize : $this->pageSize;
+        $where = [['room_id', '=', $roomId]];
+        if ($messageId) {
+            $where[] = $order ? ['message_id', '>', $messageId] : ['message_id', '<', $messageId];
+        }
+        $list = Message::select('user_id', 'message')
+                    ->where($where)
+                    ->orderBy('message_id', $orderBy)
+                    ->limit($pageSize)
+                    ->get();
+        if (!$order) {
+            $list = $list->reverse();
+        }
+        return $list;
     }
 }

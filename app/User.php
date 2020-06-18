@@ -36,4 +36,17 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * Insert message into database
+     *
+     * @var $userId int
+     */
+    public function get($userId)
+    {
+        $data = User::select('name')
+                    ->find($userId);
+        return $data;
+    }
+
 }
