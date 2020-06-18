@@ -43,7 +43,6 @@ class WebSocketService implements WebSocketHandlerInterface
 
     {
 
-        $this->middleware('auth');
         $this->message = new Message();
 
     }
