@@ -73,6 +73,7 @@
 
     websocket.onclose = function (evt) {
         console.log("Disconnected");
+        clearInterval(timer);
     };
 
     websocket.onmessage = function (evt) {

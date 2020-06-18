@@ -62,7 +62,8 @@ class WebSocketService implements WebSocketHandlerInterface
 
         // throw new \Exception('an exception');// 此时抛出的异常上层会忽略，并记录到Swoole日志，需要开发者try/catch捕获处理
 
-        $roomId = $request->input('id');
+        $roomId = $request->get['id'];
+        $userId = Auth::user()->id;
         $username = Auth::user()->name;
 
         //get current fd from this room
@@ -74,7 +75,7 @@ class WebSocketService implements WebSocketHandlerInterface
         $result = Redis::sadd($channelKey, $request->fd);
 
         //set fd user relationship
-        $result = Redis::set($fdUserKey, json_encode(['userId' => Auth::user()->id, 'username' => $username, 'roomId' => $roomId]));
+        $result = Redis::set($fdUserKey, json_encode(['userId' => $userId, 'username' => $username, 'roomId' => $roomId]));
         
         $data = [
             "type" => self::MESSAGETYPE[2],
@@ -134,7 +135,7 @@ class WebSocketService implements WebSocketHandlerInterface
 
         // get user by fd from redis
         $fdUserKey = self::FDUSERKEY . $fd;
-        $user = Redis::get($key);
+        $user = Redis::get($fdUserKey);
         $user = json_decode($user, true);
 
         //get current fd from this room
