@@ -8,11 +8,12 @@
                 <thead>
                     <tr>
                         <th>
-                            {{ $room->name }}
+                            <div>{{ $room->name }}</div>
                         </th>
                     </tr>
                 </thead>
                 <tbody>
+                    <!-- <tr><td></td></tr> -->
                     <tr>
                         <td class="bg-light">
                             <div id="message-content" data-spy="scroll" data-target="#navbar-example" data-offset="0" style="height:400px; overflow: auto; position: relative;"></div>
@@ -34,12 +35,12 @@
             </table>
         </div>
         <div class="col-lg-2">
-            <div class="card">
+            <div class="card" id="user-card">
                 <div class="card-header">当前用户</div>
                 <div style="height: 400px; overflow: auto; position: relative;">
                     <ul class="list-group list-group-flush">
                         @foreach ($userList as $user)
-                            <li class="list-group-item">{{ $user }}</li>
+                            <li class="list-group-item" id="user-li-{{ $user }}">{{ $user }}</li>
                         @endforeach
                         <li class="list-group-item"></li>
                     </ul>
@@ -47,7 +48,8 @@
             </div>
         </div>
     </div>
-    @include('message')
+    @include('chat.message')
+    @include('chat.alert')
 </div>
 
 
@@ -55,10 +57,18 @@
 <script type="text/javascript">
     var userId = "{{ $userId }}";
     var username = "{{ $username }}";
+    var roomId = "{{ $room['room_id'] }}"
     var wsServer = 'ws://139.224.15.38/ws';
     var websocket = new WebSocket(wsServer);
     websocket.onopen = function (evt) {
         console.log("Connected to WebSocket server.");
+        var enterMessage = {
+            "type": "2",
+            "message": username + "加入了聊天室",
+            "userId": userId,
+            "username": username
+        }
+        websocket.send(JSON.stringify(enterMessage));
     };
 
     websocket.onclose = function (evt) {
@@ -68,15 +78,34 @@
     websocket.onmessage = function (evt) {
         console.log('Retrieved data from server: ' + evt.data);
         var message = eval('(' + evt.data + ')');
-        var className = "#message-proto .message";
-        if (userId == message['userId']) {
-            className = "#message-proto .self-message";
+        if (message['type'] == 0) {
+            var className = "#message-proto .message";
+            if (userId == message['userId']) {
+                className = "#message-proto .self-message";
+            }
+            var messageBox = $(className).clone();
+            $(messageBox).find(".user-div").text(message['username']);
+            $(messageBox).find(".message-div").text(message['message']);
+            $("#message-content").append($(messageBox));
         }
-        var messageBox = $(className).clone();
-        var messagename = message['username'] ? message['username'] : "测试";
-        $(messageBox).find(".user-div").text(messagename);
-        $(messageBox).find(".message-div").text(message['message']);
-        $("#message-content").append($(messageBox));
+        else if (message['type'] == 2 || message['type'] == 3)
+        {
+            closeAlert();
+            var alertBox = $("#alert-proto div").clone();
+            $(alertBox).find(".alert-span").text(message['message']);
+            $("tbody").prepend($(alertBox));
+            setTimeout(closeAlert, 3000);
+        }
+        if (message['type'] == 2 && userId != message['userId']) {
+            var lastLi = $("#user-card").find("li:last");
+            var userLi = $(lastLi).clone();
+            $(userLi).attr("id", "user-li-" + message['username']);
+            $(userLi).text(message['username']);
+            $(lastLi).before($(userLi));
+        }
+        if (message['type'] == 3) {
+            $("#user-li-" + message['username']).remove();
+        }
     };
 
     websocket.onerror = function (evt, e) {
@@ -85,9 +114,9 @@
 
     var heartBeatMessage = {
         "type": "1",
-        "message": "heart beat at " + new Date(),
+        "message": "heart beat",
         "userId": 0,
-        "username": "测试"
+        "username": "心跳"
     }
 
     var heartBeat = function(){
@@ -97,9 +126,12 @@
 
     var timer = setInterval(heartBeat, 50000);
 
-    $( window ).on("unload", function() {
-        websocket.close();
-    });
+    var closeAlert = function(){
+        var closeButton = $("tbody").find(".close");
+        if ($(closeButton).length) {
+            $(closeButton).alert('close');
+        }
+    }
 
     $("#submit").click(function () {
         var message = $("#message").val();
@@ -108,6 +140,7 @@
             var data = {
                 "type":0,
                 "message":message,
+                "roomId":roomId,
                 "userId":userId,
                 "username":username
             };
