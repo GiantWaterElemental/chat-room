@@ -16,7 +16,25 @@
                     <!-- <tr><td></td></tr> -->
                     <tr>
                         <td class="bg-light">
-                            <div id="message-content" data-spy="scroll" data-target="#navbar-example" data-offset="0" style="height:400px; overflow: auto; position: relative;"></div>
+                            <div id="message-content" data-spy="scroll" data-target="#navbar-example" data-offset="0" style="height:400px; overflow: auto; position: relative;">
+                                @foreach ($messageList as $message)
+                                    @if ($message['user_id'] == $userId)
+                                        <div class="self-message" style="height: 65px;">
+                                            <div class="float-right">
+                                                <div class="alert alert-success message-div" style="display: inline-block;">{{ $message['message'] }}</div>
+                                                <div class="arrow" style="width: 0; height: 0; font-size: 0; border-width: 10px; border-style: solid; position: relative; top: 6px; border-color: transparent transparent transparent #c7eed8; right: 4px; display: inline-block;"></div>
+                                                <div class="alert alert-light img-thumbnail user-div" style="display: inline-block;">{{ $message['username'] }}</div>
+                                    @else
+                                        <div class="message" style="height: 65px;">
+                                            <div class="float-left">
+                                                <div class="alert alert-light img-thumbnail user-div" style="display: inline-block;">{{ $message['username'] }}</div>
+                                                <div class="arrow" style="width: 0; height: 0; font-size: 0; border-width: 10px; border-style: solid; position: relative; top: 6px; border-color: transparent #c7eed8 transparent transparent; left: 4px; display: inline-block;"></div>
+                                                <div class="alert alert-success message-div" style="display: inline-block;">{{ $message['message'] }}</div>
+                                    @endif
+                                            </div>
+                                        </div>
+                                @endforeach
+                            </div>
                         </td>
                     </tr>
                 </tbody>
@@ -133,6 +151,21 @@
             $(closeButton).alert('close');
         }
     }
+
+    $(document).ready(function(){
+        var height = $("#message-content").height();
+        var scrollHeight = $("#message-content").prop("scrollHeight");
+        if (scrollHeight > height) {
+            $("#message-content").scrollTop(scrollHeight);
+        }
+    });
+
+    $("#message-content").scroll(function(){
+        var scrollTop = $(this).scrollTop();
+        if (scrollTop == 0) {
+            var url = "";
+        }
+    });
 
     $("#submit").click(function () {
         var message = $("#message").val();
