@@ -58,7 +58,7 @@
     var userId = "{{ $userId }}";
     var username = "{{ $username }}";
     var roomId = "{{ $room['room_id'] }}";
-    var wsServer = 'ws://139.224.15.38/ws';
+    var wsServer = 'ws://139.224.15.38/ws?id=' + roomId;
     var websocket = new WebSocket(wsServer);
     websocket.onopen = function (evt) {
         console.log("Connected to WebSocket server.");
