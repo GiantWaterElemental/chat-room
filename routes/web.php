@@ -24,3 +24,5 @@ Route::get('/home', 'ChatroomController@list')->name('home');
 Route::get('/chatroomList', 'ChatroomController@list')->name('chatroomList');
 
 Route::get('/chatroom/{id}', 'ChatroomController@index')->name('chatroom');
+
+Route::get('/ws')->middleware('auth');
