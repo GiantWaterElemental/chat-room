@@ -98,14 +98,15 @@ class WebSocketService implements WebSocketHandlerInterface
 
         switch ($data['type']) {
             case self::MESSAGETYPE[0]:
+                // insert into database
+                $messageId = $this->message->add($data['roomId'], $data['userId'], $data['message']);
+                $data['message_id'] = $messageId;
+                $frame->data = json_encode($data);
                 // \Log::info('Received message', [$frame->fd, $frame->data, $frame->opcode, $frame->finish]);
                 foreach ($server->connections as $fd) {
                     $server->push($fd, $frame->data);
                 }
                 // throw new \Exception('an exception');// 此时抛出的异常上层会忽略，并记录到Swoole日志，需要开发者try/catch捕获处理
-
-                // insert into database
-                $messageId = $this->message->add($data['roomId'], $data['userId'], $data['message']);
                 break;
 
             case self::MESSAGETYPE[3]:

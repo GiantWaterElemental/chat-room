@@ -40,7 +40,7 @@ class User extends Authenticatable
     /**
      * Insert message into database
      *
-     * @var $userId int
+     * @param $userId int
      */
     public function get($userId)
     {

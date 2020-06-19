@@ -19,13 +19,13 @@
                             <div id="message-content" data-spy="scroll" data-target="#navbar-example" data-offset="0" style="height:400px; overflow: auto; position: relative;">
                                 @foreach ($messageList as $message)
                                     @if ($message['user_id'] == $userId)
-                                        <div class="self-message" style="height: 65px;">
+                                        <div class="self-message" style="height: 65px;" messageId="{{ $message['message_id'] }}">
                                             <div class="float-right">
                                                 <div class="alert alert-success message-div" style="display: inline-block;">{{ $message['message'] }}</div>
                                                 <div class="arrow" style="width: 0; height: 0; font-size: 0; border-width: 10px; border-style: solid; position: relative; top: 6px; border-color: transparent transparent transparent #c7eed8; right: 4px; display: inline-block;"></div>
                                                 <div class="alert alert-light img-thumbnail user-div" style="display: inline-block;">{{ $message['username'] }}</div>
                                     @else
-                                        <div class="message" style="height: 65px;">
+                                        <div class="message" style="height: 65px;" messageId="{{ $message['message_id'] }}">
                                             <div class="float-left">
                                                 <div class="alert alert-light img-thumbnail user-div" style="display: inline-block;">{{ $message['username'] }}</div>
                                                 <div class="arrow" style="width: 0; height: 0; font-size: 0; border-width: 10px; border-style: solid; position: relative; top: 6px; border-color: transparent #c7eed8 transparent transparent; left: 4px; display: inline-block;"></div>
@@ -78,6 +78,8 @@
     var roomId = "{{ $room['room_id'] }}";
     var wsServer = 'ws://127.0.0.1:9501/id/' + "{{ $room->room_id }}";
     var websocket = new WebSocket(wsServer);
+    var noMoreHistory = false;
+    var ajaxStatus = false;
     websocket.onopen = function (evt) {
         console.log("Connected to WebSocket server.");
         var enterMessage = {
@@ -98,22 +100,24 @@
         console.log('Retrieved data from server: ' + evt.data);
         var message = eval('(' + evt.data + ')');
         if (message['type'] == 0) {
+            var height = $("#message-content").height();
+            var scrollHeight = $("#message-content").prop("scrollHeight");
             var className = "#message-proto .message";
             if (userId == message['userId']) {
                 className = "#message-proto .self-message";
             }
             var messageBox = $(className).clone();
+            $(messageBox).attr("messageId", message['message_id']);
             $(messageBox).find(".user-div").text(message['username']);
             $(messageBox).find(".message-div").text(message['message']);
             $("#message-content").append($(messageBox));
+            if (height == scrollHeight) {
+                scrollToBottom();
+            }
         }
         else if (message['type'] == 2 || message['type'] == 3)
         {
-            closeAlert();
-            var alertBox = $("#alert-proto div").clone();
-            $(alertBox).find(".alert-span").text(message['message']);
-            $("tbody").prepend($(alertBox));
-            setTimeout(closeAlert, 3000);
+            showAlert(message['message']);
         }
         if (message['type'] == 2 && userId != message['userId']) {
             var lastLi = $("#user-card").find("li:last");
@@ -145,6 +149,14 @@
 
     var timer = setInterval(heartBeat, 50000);
 
+    var showAlert = function(message){
+        closeAlert();
+        var alertBox = $("#alert-proto div").clone();
+        $(alertBox).find(".alert-span").text(message);
+        $("tbody").prepend($(alertBox));
+        setTimeout(closeAlert, 3000);
+    }
+
     var closeAlert = function(){
         var closeButton = $("tbody").find(".close");
         if ($(closeButton).length) {
@@ -153,19 +165,65 @@
     }
 
     $(document).ready(function(){
+        scrollToBottom();
+    });
+
+    var scrollToBottom = function(){
         var height = $("#message-content").height();
         var scrollHeight = $("#message-content").prop("scrollHeight");
         if (scrollHeight > height) {
             $("#message-content").scrollTop(scrollHeight);
         }
-    });
+    }
 
-    $("#message-content").scroll(function(){
-        var scrollTop = $(this).scrollTop();
-        if (scrollTop == 0) {
-            var url = "";
+    $("#message-content").on('mousewheel DOMMouseScroll', function(e){
+        var wheel = e.originalEvent.wheelDelta || -e.originalEvent.detail;
+        var delta = Math.max(-1, Math.min(1, wheel) );
+        if (delta > 0 && $(this).scrollTop() == 0 && noMoreHistory == true) {
+            showAlert("没有更多历史消息");
+            return;
+        }
+        if (delta > 0 && $(this).scrollTop() == 0 && noMoreHistory == false) {
+            prependMessage();
+            $("#message-content").off('mousewheel DOMMouseScroll');
         }
     });
+
+    var prependMessage = function(){
+        if (ajaxStatus) {
+            return;
+        }
+        ajaxStatus = true;
+        var oldestMessageId = $("#message-content").children().first().attr("messageId");
+        var url = "{{ action('ChatroomController@messageList') }}";
+        var data = {roomId: roomId, messageId: oldestMessageId, order: 0};
+        $.ajax({
+            url:url,
+            data:data,
+            type:"post",
+            dataType:"json",
+            headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+            success:function(message){
+                ajaxStatus = false;
+                if (message.length == 0) {
+                    showAlert("没有更多历史消息");
+                    noMoreHistory = true;
+                    return;
+                }
+                for (var i = 0; i < message.length; i++) {
+                    var className = "#message-proto .message";
+                    if (userId == message[i]['user_id']) {
+                        className = "#message-proto .self-message";
+                    }
+                    var messageBox = $(className).clone();
+                    $(messageBox).attr("messageId", message[i]['message_id']);
+                    $(messageBox).find(".user-div").text(message[i]['username']);
+                    $(messageBox).find(".message-div").text(message[i]['message']);
+                    $("#message-content").prepend($(messageBox));
+                }
+            }
+        });
+    }
 
     $("#submit").click(function () {
         var message = $("#message").val();

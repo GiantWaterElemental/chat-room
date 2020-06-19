@@ -16,9 +16,9 @@ class Message extends Model
 	/**
      * Insert message into database
      *
-     * @var $roomId int
-     * @var $userId int
-     * @var $message str
+     * @param $roomId int
+     * @param $userId int
+     * @param $message str
      */
     public function add($roomId, $userId, $message)
     {
@@ -33,11 +33,11 @@ class Message extends Model
     /**
      * Get message list
      *
-     * @var $roomId int
-     * @var $messageId int
-     * @var $index int
-     * @var $pageSize int
-     * @var $order int
+     * @param $roomId int
+     * @param $messageId int
+     * @param $index int
+     * @param $pageSize int
+     * @param $order int
      */
     public function list($roomId, $messageId, $index, $pageSize, $order)
     {
@@ -47,7 +47,7 @@ class Message extends Model
         if ($messageId) {
             $where[] = $order ? ['message_id', '>', $messageId] : ['message_id', '<', $messageId];
         }
-        $list = Message::select('user_id', 'message')
+        $list = Message::select('message_id', 'user_id', 'message')
                     ->where($where)
                     ->orderBy('message_id', $orderBy)
                     ->limit($pageSize)
