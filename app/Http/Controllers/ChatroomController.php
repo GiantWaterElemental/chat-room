@@ -59,7 +59,7 @@ class ChatroomController extends Controller
         $userList = Redis::smembers($key);
         
         // Get latest message list
-        $messageList = $this->message->list($roomId, 0, -1, 3, 0);
+        $messageList = $this->message->list($roomId, 0, -1, 15, 0);
         foreach ($messageList as &$message) {
             $messageUser = $this->user->get($message['user_id']);
             $message['username'] = $messageUser->name;
@@ -82,7 +82,7 @@ class ChatroomController extends Controller
         $roomId = $request->input('roomId');
         $messageId = $request->input('messageId');
         $order = $request->input('order');
-        $messageList = $this->message->list($roomId, $messageId, 0, 3, $order);
+        $messageList = $this->message->list($roomId, $messageId, 0, 15, $order);
         foreach ($messageList as &$message) {
             $messageUser = $this->user->get($message['user_id']);
             $message['username'] = $messageUser->name;
