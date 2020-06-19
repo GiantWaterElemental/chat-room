@@ -101,6 +101,7 @@
         var message = eval('(' + evt.data + ')');
         if (message['type'] == 0) {
             var height = $("#message-content").height();
+            var scrollTop = $("#message-content").scrollTop();
             var scrollHeight = $("#message-content").prop("scrollHeight");
             var className = "#message-proto .message";
             if (userId == message['userId']) {
@@ -111,7 +112,7 @@
             $(messageBox).find(".user-div").text(message['username']);
             $(messageBox).find(".message-div").text(message['message']);
             $("#message-content").append($(messageBox));
-            if (height == scrollHeight) {
+            if (scrollHeight > height && height + scrollTop == scrollHeight) {
                 scrollToBottom();
             }
         }
@@ -224,6 +225,13 @@
             }
         });
     }
+
+    $("#message").keydown(function(e){
+        var e = e || event, keycode = e.which || e.keyCode;
+        if (keycode == 13) {
+            $("#submit").click();
+        }
+    });
 
     $("#submit").click(function () {
         var message = $("#message").val();
