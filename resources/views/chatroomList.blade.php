@@ -4,7 +4,7 @@
 <div class="container">
     <div class="row justify-content-center">
         @for ($i = 0; $i < $count; $i++)
-            @if ($i > 0 && ($i - 1) % 3 == 0)
+            @if ($i > 0 && ($i - 1) % 3 == 0 && $count > 3)
                 <div class="row justify-content-center">
             @endif
             <div class="col-md-4 col-xs-1">
@@ -18,7 +18,7 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="">
+                            <td class="" style="height: 100%;">
                                 <div></div>
                                 <img src="{{ $list[$i]->imgpath }}" class="img-fluid rounded">
                             </td>
@@ -30,7 +30,7 @@
                             </td>
                         </tr>
                     </tbody>
-                </div>
+                </table>
             </div>
             @if ($i > 0 && $i % 3 == 0)
                 </div>
