@@ -1,79 +1,68 @@
 <p align="center"><img src="https://res.cloudinary.com/dtfbvvkyp/image/upload/v1566331377/laravel-logolockup-cmyk-red.svg" width="400"></p>
 
 <p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
+<a href="https://travis-ci.org/laravel/framework"><img src="https://img.shields.io/badge/php-%5E7.2.27-blue" alt="PHP Version"></a>
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
 </p>
 
-## About Laravel
+## Background
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<p align="center"><img src="https://github.com/GiantWaterElemental/chat-room/blob/master/20200621175000_1.png?raw=true"></p>
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+This is a personal practice on multi-person real-time communicating system, aka chat room, based on : 
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- [PHP](https://www.php.net/). Best language in the world.
+- [MySQL](https://www.mysql.com/). The world's most popular open source database.
+- [Laravel](https://www.laravel.com/). The PHP Framework For Web Artisans.
+- [Swoole](https://www.swoole.com/). Coroutine based Async PHP programming framework.
+- [LaravelS](https://github.com/hhxsv5/laravel-s). An out-of-the-box adapter between Swoole and Laravel/Lumen.
+- [nginx](http://nginx.org/). An HTTP and reverse proxy server.
+- [Bootstrap](https://getbootstrap.com/). The world’s most popular front-end open source toolkit.
+- [jQuery](https://jquery.com/). A fast, small, and feature-rich JavaScript library.
 
-## Learning Laravel
+## Start
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+This project is currently installed on my own Aliyun web server, please feel free to access [home](http://139.224.15.38/home), register and start chatting with others.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Sequence Diagram
 
-## Laravel Sponsors
+```sequesnce
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+participant user
+participant browser/websocket client
+participant nginx
+participant web service
+participant redis
+participant mysql
+participant websocket server
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- [UserInsights](https://userinsights.com)
-- [Fragrantica](https://www.fragrantica.com)
-- [SOFTonSOFA](https://softonsofa.com/)
-- [User10](https://user10.com)
-- [Soumettre.fr](https://soumettre.fr/)
-- [CodeBrisk](https://codebrisk.com)
-- [1Forge](https://1forge.com)
-- [TECPRESSO](https://tecpresso.co.jp/)
-- [Runtime Converter](http://runtimeconverter.com/)
-- [WebL'Agence](https://weblagence.com/)
-- [Invoice Ninja](https://www.invoiceninja.com)
-- [iMi digital](https://www.imi-digital.de/)
-- [Earthlink](https://www.earthlink.ro/)
-- [Steadfast Collective](https://steadfastcollective.com/)
-- [We Are The Robots Inc.](https://watr.mx/)
-- [Understand.io](https://www.understand.io/)
-- [Abdel Elrafa](https://abdelelrafa.com)
-- [Hyper Host](https://hyper.host)
-- [Appoly](https://www.appoly.co.uk)
-- [OP.GG](https://op.gg)
-- [云软科技](http://www.yunruan.ltd/)
+user->browser/websocket client: enter chat room
+browser/websocket client->nginx: request for chat room info
+nginx->web service: forward to
+web service->redis: add user to chat room user set
+web service->mysql: get chat room info
+mysql-->web service: return chat room info
+web service-->browser/websocket client: response chat room info
+browser/websocket client->nginx: handshake
+nginx->websocket server: forward to
+websocket server->redis: add fd to chat room fd set
+websocket server-->browser/websocket client:101 switching protocols
+browser/websocket client-->user: display chat room
+user->browser/websocket client: send message
+browser/websocket client->nginx: send data
+nginx->websocket server: forward to
+websocket server->mysql: insert message data
+websocket server->redis: get all fd from chat room fd set
+redis-->websocket server: return fd list
+websocket server->browser/websocket client: send data to all fd in chat room
+browser/websocket client->user: display message
 
-## Contributing
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Todo
 
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- fix bugs
+- add image & emoji support
+- a backstage management system(should be a new project)
