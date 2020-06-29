@@ -19,12 +19,12 @@ class ChatroomController extends Controller
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(Chatroom $chatroom, Message $message, User $user)
     {
         $this->middleware('auth');
-        $this->chatroom = new Chatroom();
-        $this->message = new Message();
-        $this->user = new User();
+        $this->chatroom = $chatroom;
+        $this->message = $message;
+        $this->user = $user;
     }
 
     /**
