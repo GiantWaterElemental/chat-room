@@ -15,7 +15,7 @@ This is a personal practice on multi-person real-time communicating system, aka 
 
 ## Start
 
-This project is currently installed on my own Aliyun web server, please feel free to access [home](http://139.224.15.38/home), register and start chatting with others.
+This project is currently installed on my own Aliyun web server, please feel free to access [home](http://47.100.14.153/home), register and start chatting with others.
 
 <p align="center"><img src="https://github.com/GiantWaterElemental/chat-room/blob/master/public/img/20200621175000_2.png?raw=true"></p>
 
